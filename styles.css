@@ -539,6 +539,12 @@ footer {
     transform: translateY(0);
 }
 
+/* Hide mobile nav components on desktop by default */
+.mobile-header,
+.sidebar-overlay {
+    display: none;
+}
+
 /* Responsive Layout Changes */
 @media (max-width: 1024px) {
     .app-container {
