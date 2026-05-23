@@ -523,8 +523,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let anchor = '';
                 if (pageHash) {
-                    const cleanAnchor = pageHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
-                    anchor = cleanAnchor;
+                    const parts = pageHash.split('-');
+                    const stateCodes = ['ja', 'vi', 'en', 'spa', 'salon'];
+                    anchor = parts.filter(p => !stateCodes.includes(p)).join('-');
                 }
                 
                 if (anchor) hashParts.push(anchor);
@@ -1408,6 +1409,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 ];
 
+    // Volumes Database for all 27 cities based on actual Base Case customer metrics
+    const volumesDb = {
+        'bangkok': 400,
+        'binhduong': 440,
+        'brisbane': 300,
+        'busan': 450,
+        'danang': 450,
+        'dongnai': 440,
+        'dubai': 380,
+        'fukuoka': 360,
+        'haiphong': 440,
+        'hanoi': 450,
+        'hcmc': 450,
+        'hongkong': 300,
+        'johor': 450,
+        'kaohsiung': 260,
+        'kuala_lumpur': 400,
+        'macau': 300,
+        'melbourne': 300,
+        'okinawa': 324,
+        'penang': 350,
+        'perth': 300,
+        'sabah': 350,
+        'sarawak': 350,
+        'singapore': 380,
+        'sydney': 300,
+        'taichung': 480,
+        'tainan': 250,
+        'taipei': 360
+    };
+
+    // Parse baseline numerical values dynamically from string representations
+    citiesDb.forEach(city => {
+        const key = city.url.replace('.html', '');
+        city.volume = volumesDb[key] || 300;
+        
+        // ticketVal
+        if (city.ticket) {
+            city.ticketVal = parseInt(city.ticket.replace(/[^0-9]/g, '')) || 0;
+        } else {
+            city.ticketVal = 0;
+        }
+        
+        // opexVal
+        if (city.opex) {
+            city.opexVal = parseInt(city.opex.replace(/[^0-9]/g, '')) || 0;
+        } else {
+            city.opexVal = 0;
+        }
+        
+        // capexVal
+        if (city.capex) {
+            const capexMatches = city.capex.match(/(\d+)k/g);
+            if (capexMatches) {
+                const nums = capexMatches.map(m => parseInt(m) * 1000);
+                city.capexVal = nums.reduce((a, b) => a + b, 0) / nums.length;
+            } else {
+                city.capexVal = parseInt(city.capex.replace(/[^0-9]/g, '')) || 0;
+            }
+        } else {
+            city.capexVal = 0;
+        }
+        
+        // taxVal
+        if (city.tax) {
+            city.taxVal = (parseFloat(city.tax.replace(/[^0-9.]/g, '')) || 0) / 100;
+        } else {
+            city.taxVal = 0;
+        }
+    });
+
     // Helper functions to get model adjusted values
     function getModelFormat(baseFormat, model) {
         if (model === 'spa') return baseFormat;
@@ -1686,8 +1758,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const currentHash = window.location.hash.substring(1);
                         let anchor = '';
                         if (currentHash) {
-                            const cleanAnchor = currentHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
-                            anchor = cleanAnchor;
+                            const parts = currentHash.split('-');
+                            const stateCodes = ['ja', 'vi', 'en', 'spa', 'salon'];
+                            anchor = parts.filter(p => !stateCodes.includes(p)).join('-');
                         }
                         if (anchor) hashParts.push(anchor);
                         
@@ -2354,8 +2427,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentHash = window.location.hash.substring(1);
             let anchor = '';
             if (currentHash) {
-                const cleanAnchor = currentHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
-                anchor = cleanAnchor;
+                const parts = currentHash.split('-');
+                const stateCodes = ['ja', 'vi', 'en', 'spa', 'salon'];
+                anchor = parts.filter(p => !stateCodes.includes(p)).join('-');
             }
             if (anchor) hashParts.push(anchor);
             
