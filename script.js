@@ -1671,8 +1671,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
-                        btns.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
                         
                         try {
                             localStorage.setItem('selectedModel', m);
@@ -1694,9 +1692,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (anchor) hashParts.push(anchor);
                         
                         window.location.href = `${currentBaseUrl}#${hashParts.join('-')}`;
-                        
-                        // Dynamically update components
-                        updatePlatformComponents();
+                        window.location.reload();
                     });
                 });
             }
@@ -2272,6 +2268,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    function handleScrollAnchor() {
+        const hash = window.location.hash;
+        if (hash) {
+            const cleanHash = hash.substring(1);
+            const parts = cleanHash.split('-');
+            
+            // The anchor is the last part if it is not a language or model code
+            const lastPart = parts[parts.length - 1];
+            const stateCodes = ['ja', 'vi', 'en', 'spa', 'salon'];
+            if (lastPart && !stateCodes.includes(lastPart)) {
+                const targetEl = document.getElementById(lastPart);
+                if (targetEl) {
+                    setTimeout(() => {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 400);
+                }
+            }
+        }
+    }
 
     // ==========================================
     // INITIALIZATION CODE
@@ -2284,6 +2299,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Execute Global Page updates (Calculations, maps, table structures)
     updatePlatformComponents();
+
+    // Scroll to the active section if an anchor is present in URL hash
+    handleScrollAnchor();
+
+    // Monitor hashchange events for browser history navigation
+    let currentActiveState = getActiveState();
+    window.addEventListener('hashchange', () => {
+        const newState = getActiveState();
+        if (newState.lang !== currentActiveState.lang || newState.model !== currentActiveState.model) {
+            window.location.reload();
+        }
+    });
 
     // Auto-update Leaflet global instance if available on subpages
     if (typeof L !== 'undefined' && L.Map) {
@@ -2333,13 +2360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (anchor) hashParts.push(anchor);
             
             window.location.href = `${currentBaseUrl}#${hashParts.join('-')}`;
-            
-            // Re-apply translation
-            updatePlatformComponents();
-            
-            // Highlight active button
-            langBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            window.location.reload();
         });
     });
 
