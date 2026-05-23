@@ -905,6 +905,58 @@ details.city-group[open] summary {
     border-color: var(--accent);
 }
 
+
+/* ==========================================
+   SLEEK MODEL SELECTOR PILLS
+   ========================================== */
+.model-selector {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    justify-content: center;
+}
+
+.model-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.3s ease;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.model-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text-main);
+    border-color: rgba(198, 168, 124, 0.3);
+}
+
+.model-btn.active[data-model="spa"] {
+    background: linear-gradient(135deg, var(--accent) 0%, #b39467 100%);
+    color: #0b0f14;
+    border-color: var(--accent);
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(198, 168, 124, 0.2);
+}
+
+.model-btn.active[data-model="salon"] {
+    background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+    color: #0b0f14;
+    border-color: #94a3b8;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(148, 163, 184, 0.2);
+}
+
 /* ==========================================
    PRINT & PDF DOWNLOAD STYLES
    ========================================== */
@@ -941,6 +993,7 @@ details.city-group[open] summary {
 
 @media print {
     .lang-selector,
+    .model-selector,
 
     /* Set page margins and size */
     @page {

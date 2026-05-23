@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "Time to Payback (Post-Tax CAPEX)": "投資回収期間 (税後)",
         "Underserved Demand Gap (%)": "未充足需要ギャップ (%)",
         "Time from Nearest Airport": "最寄空港からの時間",
-        "Key Strategic Risk": "主要な戦略적リスク",
+        "Key Strategic Risk": "主要な戦略的リスク",
 
         // Region Tabs & Buttons
         "All": "すべて",
@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Custom Selector Regions
         "Select Region": "地域を選択",
         "All Regions": "すべての地域",
+        
+        // Model Toggle Names
+        "Hair Spa": "ヘアスパモデル",
+        "Pure Salon": "通常サロンモデル",
         
         // Cities
         "Bangkok": "バンコク",
@@ -125,6 +129,24 @@ document.addEventListener('DOMContentLoaded', () => {
         "Cross-Border PoC": "国境間PoC",
         "Aesthetic Lane Spa (MVP)": "路地裏美学スパ (MVP)",
         "Expat PoC / MVP": "移住者向けPoC / MVP",
+        
+        // Salon Formats
+        "Premium Boutique Salon (MVP)": "ブティックヘアサロン (MVP)",
+        "Industrial Corridor Salon (MVP)": "産業回廊サロン (MVP)",
+        "Subtropical Oasis Salon (MVP)": "亜熱帯オアシスサロン (MVP)",
+        "Coastal Luxury Salon Suite (MVP)": "沿岸贅沢サロン (MVP)",
+        "Ultra-Luxury Salon Suite (MVP)": "超豪華ヘアサロン (MVP)",
+        "Coastal Tourism Salon PoC / MVP": "PoC / MVP salon du lịch ven biển",
+        "Heritage Boutique Salon PoC": "歴史遺産サロンPoC",
+        "Coastal Expat Salon (MVP)": "沿岸移住者サロン (MVP)",
+        "Luxury Micro-Salon / PoC": "高級マイクロサロン / PoC",
+        "Luxury Salon Suite PoC": "高級サロンスイートPoC",
+        "Boutique Salon Suite / PoC": "ブティックサロンスイートPoC",
+        "Seaside Resort Salon PoC / MVP": "海辺リゾートサロンPoC",
+        "Metro Port Salon PoC / MVP": "港湾都市サロンPoC",
+        "Cross-Border Salon PoC": "国境間サロンPoC",
+        "Aesthetic Lane Salon (MVP)": "路地裏美学サロン (MVP)",
+        "Expat Salon PoC / MVP": "移住者向けサロンPoC",
         
         // Risks in table
         "Local market pricing pressure": "ローカル市場における価格競争",
@@ -289,6 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
         "Select Region": "Chọn khu vực",
         "All Regions": "Tất cả khu vực",
         
+        // Model Toggle Names
+        "Hair Spa": "Gội đầu dưỡng sinh",
+        "Pure Salon": "Salon tóc tiêu chuẩn",
+        
         // Cities
         "Bangkok": "Bangkok",
         "Binh Duong": "Bình Dương",
@@ -337,6 +363,24 @@ document.addEventListener('DOMContentLoaded', () => {
         "Cross-Border PoC": "PoC xuyên biên giới",
         "Aesthetic Lane Spa (MVP)": "Spa thẩm mỹ trong ngõ (MVP)",
         "Expat PoC / MVP": "PoC / MVP cho người nước ngoài",
+        
+        // Salon Formats
+        "Premium Boutique Salon (MVP)": "Boutique tóc (MVP)",
+        "Industrial Corridor Salon (MVP)": "Salon hành lang công nghiệp (MVP)",
+        "Subtropical Oasis Salon (MVP)": "Salon ốc đảo cận nhiệt đới (MVP)",
+        "Coastal Luxury Salon Suite (MVP)": "Salon ven biển cao cấp (MVP)",
+        "Ultra-Luxury Salon Suite (MVP)": "Salon siêu sang (MVP)",
+        "Coastal Tourism Salon PoC / MVP": "PoC / MVP salon du lịch ven biển",
+        "Heritage Boutique Salon PoC": "PoC Salon di sản",
+        "Coastal Expat Salon (MVP)": "Salon ven biển cho người nước ngoài (MVP)",
+        "Luxury Micro-Salon / PoC": "Micro-Salon cao cấp / PoC",
+        "Luxury Salon Suite PoC": "PoC Salon Suite cao cấp",
+        "Boutique Salon Suite / PoC": "PoC Boutique Salon Suite",
+        "Seaside Resort Salon PoC / MVP": "PoC / MVP salon resort ven biển",
+        "Metro Port Salon PoC / MVP": "PoC / MVP salon thành phố cảng",
+        "Cross-Border Salon PoC": "PoC salon xuyên biên giới",
+        "Aesthetic Lane Salon (MVP)": "Salon thẩm mỹ trong ngõ (MVP)",
+        "Expat Salon PoC / MVP": "PoC / MVP salon ngoại quốc",
         
         // Risks in table
         "Local market pricing pressure": "Áp lực về giá ở thị trường nội địa",
@@ -427,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function translateDOM(root) {
-        const lang = getActiveLanguage();
+        const lang = getActiveState().lang;
         if (lang === 'en') return;
 
         const translations = lang === 'ja' ? jaTranslations : viTranslations;
@@ -463,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Dynamic URL hash propagation
-    function updateLinkHashes(lang) {
+    function updateLinkHashes(lang, model) {
         const links = document.querySelectorAll('a');
         links.forEach(link => {
             const href = link.getAttribute('href');
@@ -473,42 +517,971 @@ document.addEventListener('DOMContentLoaded', () => {
                 const baseHref = href.split('#')[0];
                 const pageHash = href.split('#')[1] || '';
                 
-                if (lang === 'en') {
-                    link.setAttribute('href', baseHref + (pageHash ? '#' + pageHash : ''));
-                } else {
-                    const newHash = pageHash ? `${lang}-${pageHash}` : lang;
-                    link.setAttribute('href', `${baseHref}#${newHash}`);
+                const hashParts = [];
+                if (lang !== 'en') hashParts.push(lang);
+                if (model !== 'spa') hashParts.push(model);
+                
+                let anchor = '';
+                if (pageHash) {
+                    const cleanAnchor = pageHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
+                    anchor = cleanAnchor;
                 }
+                
+                if (anchor) hashParts.push(anchor);
+                
+                const newHash = hashParts.join('-');
+                link.setAttribute('href', baseHref + (newHash ? '#' + newHash : ''));
             }
         });
     }
 
-    function getActiveLanguage() {
+    function getActiveState() {
         let lang = 'en';
+        let model = 'spa';
         const hash = window.location.hash;
         
         if (hash) {
             const cleanHash = hash.substring(1); // remove '#'
-            if (cleanHash.startsWith('ja')) {
+            const parts = cleanHash.split('-');
+            
+            if (parts[0] === 'ja') {
                 lang = 'ja';
-            } else if (cleanHash.startsWith('vi')) {
+            } else if (parts[0] === 'vi') {
                 lang = 'vi';
+            }
+            
+            if (parts.includes('salon')) {
+                model = 'salon';
             }
         } else {
             try {
                 lang = localStorage.getItem('selectedLanguage') || 'en';
+                model = localStorage.getItem('selectedModel') || 'spa';
             } catch (e) {
                 lang = 'en';
+                model = 'spa';
             }
         }
-        return lang;
+        return { lang, model };
     }
 
-    // Determine current active language
-    const currentLang = getActiveLanguage();
+    // Save to localStorage
+    const activeState = getActiveState();
     try {
-        localStorage.setItem('selectedLanguage', currentLang);
+        localStorage.setItem('selectedLanguage', activeState.lang);
+        localStorage.setItem('selectedModel', activeState.model);
     } catch (e) {}
+
+    // ==========================================
+    // DYNAMIC CITIES DATABASE
+    // ==========================================
+    const citiesDb = [
+    {
+        "name": "Bangkok",
+        "region": "Other APAC",
+        "format": "Premium Boutique (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 65k - 75k",
+        "opex": "USD 7,400",
+        "ticket": "USD 50",
+        "cogs": "USD 5.00",
+        "margin": "90%",
+        "breakeven": "~165 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "115% (Post-Tax)",
+        "payback": "8 Months",
+        "underserved": "29%",
+        "airport": "30 mins (BKK) / 35 mins (DMK)",
+        "risk": "Local market pricing pressure",
+        "complexity": {
+            "total": 420,
+            "loc": "90 hrs (Thonglor search)",
+            "design": "130 hrs (Boutique layout)",
+            "staff": "120 hrs (6 total headcount)",
+            "logistics": "80 hrs (Imported cosmetics)"
+        },
+        "coords": [
+            13.73,
+            100.58
+        ],
+        "url": "bangkok.html"
+    },
+    {
+        "name": "Binh Duong",
+        "region": "Vietnam",
+        "format": "Industrial Corridor (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 38k",
+        "opex": "USD 6,200",
+        "ticket": "USD 32",
+        "cogs": "USD 3.20",
+        "margin": "90%",
+        "breakeven": "~215 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "84% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "67%",
+        "airport": "45 mins (SGN)",
+        "risk": "Factory shift fluctuations",
+        "complexity": {
+            "total": 500,
+            "loc": "110 hrs (Factory corridor search)",
+            "design": "150 hrs (Soundproof VIP pods)",
+            "staff": "130 hrs (5 total headcount)",
+            "logistics": "110 hrs (HCMC customs)"
+        },
+        "coords": [
+            10.9805,
+            106.6515
+        ],
+        "url": "binhduong.html"
+    },
+    {
+        "name": "Brisbane",
+        "region": "Australia",
+        "format": "Subtropical Oasis (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 130k - 155k",
+        "opex": "USD 24,000",
+        "ticket": "USD 120",
+        "cogs": "USD 12.00",
+        "margin": "90%",
+        "breakeven": "~222 customers",
+        "daily_breakeven": "~7-8 customers/day",
+        "tax": "25.0%",
+        "pat_ratio": "77% (Post-Tax)",
+        "payback": "8 Months",
+        "underserved": "35%",
+        "airport": "20 mins (BNE)",
+        "risk": "Regulatory & staff turnover",
+        "complexity": {
+            "total": 440,
+            "loc": "100 hrs (Fortitude Valley search)",
+            "design": "140 hrs (Subtropical garden & plumbing)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "90 hrs (Premium styling tools)"
+        },
+        "coords": [
+            -27.4705,
+            153.026
+        ],
+        "url": "brisbane.html"
+    },
+    {
+        "name": "Da Nang",
+        "region": "Vietnam",
+        "format": "Coastal Expat (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 38k",
+        "opex": "USD 6,000",
+        "ticket": "USD 30",
+        "cogs": "USD 3.00",
+        "margin": "90%",
+        "breakeven": "~222 customers",
+        "daily_breakeven": "~7-8 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "82% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "43%",
+        "airport": "10 mins (DAD)",
+        "risk": "Seasonal tourism drop",
+        "complexity": {
+            "total": 380,
+            "loc": "80 hrs (Hai Chau/An Thuong search)",
+            "design": "120 hrs (4 VIP pods)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "70 hrs (Da Nang port access)"
+        },
+        "coords": [
+            16.0544,
+            108.2022
+        ],
+        "url": "danang.html"
+    },
+    {
+        "name": "Dong Nai",
+        "region": "Vietnam",
+        "format": "Suburban Industrial (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 38k",
+        "opex": "USD 5,800",
+        "ticket": "USD 30",
+        "cogs": "USD 3.00",
+        "margin": "90%",
+        "breakeven": "~215 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "84% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "67%",
+        "airport": "60 mins (SGN)",
+        "risk": "Expat shift fluctuations",
+        "complexity": {
+            "total": 520,
+            "loc": "110 hrs (Bien Hoa city search)",
+            "design": "160 hrs (Soundproof VIP pods)",
+            "staff": "130 hrs (5 total headcount)",
+            "logistics": "120 hrs (HCMC customs/shipping)"
+        },
+        "coords": [
+            10.9574,
+            106.8427
+        ],
+        "url": "dongnai.html"
+    },
+    {
+        "name": "Hai Phong",
+        "region": "Vietnam",
+        "format": "Industrial Expat (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 38k",
+        "opex": "USD 6,500",
+        "ticket": "USD 35",
+        "cogs": "USD 3.50",
+        "margin": "90%",
+        "breakeven": "~206 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "91% (Post-Tax)",
+        "payback": "6 Months",
+        "underserved": "55%",
+        "airport": "15 mins (HPH)",
+        "risk": "Corporate contract cycles",
+        "complexity": {
+            "total": 480,
+            "loc": "100 hrs (Vinhomes Imperia search)",
+            "design": "140 hrs (Soundproof VIP pods)",
+            "staff": "120 hrs (5 total headcount)",
+            "logistics": "120 hrs (Cat Bi port customs)"
+        },
+        "coords": [
+            20.8449,
+            106.6881
+        ],
+        "url": "haiphong.html"
+    },
+    {
+        "name": "Hanoi",
+        "region": "Vietnam",
+        "format": "Expat PoC",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 38k",
+        "opex": "USD 7,500",
+        "ticket": "USD 38",
+        "cogs": "USD 3.80",
+        "margin": "90%",
+        "breakeven": "~219 customers",
+        "daily_breakeven": "~7-8 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "84% (Post-Tax)",
+        "payback": "5 Months",
+        "underserved": "44%",
+        "airport": "30 mins (HAN)",
+        "risk": "Foreign license compliance",
+        "complexity": {
+            "total": 520,
+            "loc": "110 hrs (Tay Ho lakefront search)",
+            "design": "150 hrs (Quiet soundproof pods)",
+            "staff": "140 hrs (6 total headcount)",
+            "logistics": "120 hrs (Customs clearance from HK/MY)"
+        },
+        "coords": [
+            21.0285,
+            105.8522
+        ],
+        "url": "hanoi.html"
+    },
+    {
+        "name": "Ho Chi Minh",
+        "region": "Vietnam",
+        "format": "Expat PoC",
+        "size": "800 sq ft",
+        "capex": "USD 30k - 40k",
+        "opex": "USD 9,000",
+        "ticket": "USD 40",
+        "cogs": "USD 5.00",
+        "margin": "87.5%",
+        "breakeven": "~257 customers",
+        "daily_breakeven": "~8-9 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "80% (Post-Tax)",
+        "payback": "5 Months",
+        "underserved": "50%",
+        "airport": "30 mins (SGN)",
+        "risk": "Foreign license compliance",
+        "complexity": {
+            "total": 550,
+            "loc": "120 hrs (Thao Dien expat search)",
+            "design": "160 hrs (Private pod soundproofing)",
+            "staff": "150 hrs (7 total headcount)",
+            "logistics": "120 hrs (Malaysian OEM import customs)"
+        },
+        "coords": [
+            10.79,
+            106.72
+        ],
+        "url": "hcmc.html"
+    },
+    {
+        "name": "Hong Kong",
+        "region": "Other APAC",
+        "format": "Premium Kiosk / PoC",
+        "size": "750 sq ft",
+        "capex": "USD 135k - 160k",
+        "opex": "USD 21,500",
+        "ticket": "USD 150",
+        "cogs": "USD 15.00",
+        "margin": "90%",
+        "breakeven": "~160 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "16.5%",
+        "pat_ratio": "80% (Post-Tax)",
+        "payback": "9 Months",
+        "underserved": "31%",
+        "airport": "40 mins (HKG)",
+        "risk": "High upstairs rent pressure",
+        "complexity": {
+            "total": 350,
+            "loc": "80 hrs (Causeway Bay search)",
+            "design": "120 hrs (Compact 3-bed layout)",
+            "staff": "100 hrs (3 total headcount)",
+            "logistics": "50 hrs (Standard shipping hubs)"
+        },
+        "coords": [
+            22.285,
+            114.157
+        ],
+        "url": "hongkong.html"
+    },
+    {
+        "name": "Johor Bahru (RTS)",
+        "region": "Malaysia",
+        "format": "Cross-Border PoC",
+        "size": "1,000 sq ft",
+        "capex": "USD 70k - 85k",
+        "opex": "USD 8,500",
+        "ticket": "USD 45",
+        "cogs": "USD 4.50",
+        "margin": "90%",
+        "breakeven": "~210 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "24.0%",
+        "pat_ratio": "86% (Post-Tax)",
+        "payback": "11 Months",
+        "underserved": "56%",
+        "airport": "30 mins (JHB) / 50 mins (SIN)",
+        "risk": "RTS delays & staff retention",
+        "complexity": {
+            "total": 380,
+            "loc": "90 hrs (RTS skybridge connection)",
+            "design": "130 hrs (1,000 sq ft layout)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "50 hrs (Local MY supplier access)"
+        },
+        "coords": [
+            1.464,
+            103.768
+        ],
+        "url": "johor.html"
+    },
+    {
+        "name": "Kuala Lumpur",
+        "region": "Malaysia",
+        "format": "Premium Boutique (MVP)",
+        "size": "900 sq ft",
+        "capex": "USD 75k - 90k",
+        "opex": "USD 8,400",
+        "ticket": "USD 55",
+        "cogs": "USD 5.50",
+        "margin": "90%",
+        "breakeven": "~170 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "24.0%",
+        "pat_ratio": "103% (Post-Tax)",
+        "payback": "10 Months",
+        "underserved": "29%",
+        "airport": "45 mins (KUL)",
+        "risk": "Staff retention & local competition",
+        "complexity": {
+            "total": 440,
+            "loc": "90 hrs (Mont Kiara search)",
+            "design": "130 hrs (Luxurious boutique interior)",
+            "staff": "130 hrs (6 total headcount)",
+            "logistics": "90 hrs (Premium styling products)"
+        },
+        "coords": [
+            3.139,
+            101.6869
+        ],
+        "url": "kuala_lumpur.html"
+    },
+    {
+        "name": "Macau",
+        "region": "Other APAC",
+        "format": "Premium Boutique (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 110k - 130k",
+        "opex": "USD 16,000",
+        "ticket": "USD 90",
+        "cogs": "USD 9.00",
+        "margin": "90%",
+        "breakeven": "~198 customers",
+        "daily_breakeven": "~6-7 customers/day",
+        "tax": "12.0%",
+        "pat_ratio": "112% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "40%",
+        "airport": "10 mins (MFM)",
+        "risk": "Licensing approvals & grease trap path",
+        "complexity": {
+            "total": 420,
+            "loc": "100 hrs (Taipa Central search)",
+            "design": "140 hrs (Boutique layout & drainage path)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "70 hrs (Hong Kong border ports)"
+        },
+        "coords": [
+            22.1987,
+            113.5439
+        ],
+        "url": "macau.html"
+    },
+    {
+        "name": "Melbourne",
+        "region": "Australia",
+        "format": "Aesthetic Lane Spa (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 140k - 165k",
+        "opex": "USD 26,000",
+        "ticket": "USD 120",
+        "cogs": "USD 12.00",
+        "margin": "90%",
+        "breakeven": "~241 customers",
+        "daily_breakeven": "~8 customers/day",
+        "tax": "25.0%",
+        "pat_ratio": "65% (Post-Tax)",
+        "payback": "9 Months",
+        "underserved": "33%",
+        "airport": "28 mins (MEL)",
+        "risk": "Heritage DA & staff award labor",
+        "complexity": {
+            "total": 460,
+            "loc": "110 hrs (South Yarra/Fitzroy)",
+            "design": "150 hrs (Acoustic design & plumbing)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "90 hrs (Premium styling tools)"
+        },
+        "coords": [
+            -37.8136,
+            144.9631
+        ],
+        "url": "melbourne.html"
+    },
+    {
+        "name": "Penang",
+        "region": "Malaysia",
+        "format": "Expat PoC / MVP",
+        "size": "800 sq ft",
+        "capex": "USD 45k - 55k",
+        "opex": "USD 5,500",
+        "ticket": "USD 35",
+        "cogs": "USD 3.50",
+        "margin": "90%",
+        "breakeven": "~175 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "24.0%",
+        "pat_ratio": "76% (Post-Tax)",
+        "payback": "12 Months",
+        "underserved": "29%",
+        "airport": "35 mins (PEN)",
+        "risk": "Expat season fluctuations",
+        "complexity": {
+            "total": 360,
+            "loc": "80 hrs (Gurney Drive shophouses)",
+            "design": "110 hrs (Compact 4-bed style)",
+            "staff": "110 hrs (6 total headcount)",
+            "logistics": "60 hrs (Local organic supplier)"
+        },
+        "coords": [
+            5.4282,
+            100.315
+        ],
+        "url": "penang.html"
+    },
+    {
+        "name": "Sabah",
+        "region": "Malaysia",
+        "format": "Coastal Tourism PoC / MVP",
+        "size": "800 sq ft",
+        "capex": "USD 40k - 50k",
+        "opex": "USD 6,000",
+        "ticket": "USD 40",
+        "cogs": "USD 4.00",
+        "margin": "90%",
+        "breakeven": "~167 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "24.0%",
+        "pat_ratio": "75% (Post-Tax)",
+        "payback": "10 Months",
+        "underserved": "48%",
+        "airport": "15 mins (BKI)",
+        "risk": "Seasonal tourist fluctuations",
+        "complexity": {
+            "total": 490,
+            "loc": "80 hrs (KK prime retail search)",
+            "design": "130 hrs (Waterfront coastal layout)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "80 hrs (Shipments from West Malaysia)"
+        },
+        "coords": [
+            5.9804,
+            116.0735
+        ],
+        "url": "sabah.html"
+    },
+    {
+        "name": "Sarawak",
+        "region": "Malaysia",
+        "format": "Heritage Boutique PoC",
+        "size": "800 sq ft",
+        "capex": "USD 35k - 45k",
+        "opex": "USD 5,200",
+        "ticket": "USD 32",
+        "cogs": "USD 3.20",
+        "margin": "90%",
+        "breakeven": "~181 customers",
+        "daily_breakeven": "~6 customers/day",
+        "tax": "24.0%",
+        "pat_ratio": "70% (Post-Tax)",
+        "payback": "11 Months",
+        "underserved": "38%",
+        "airport": "20 mins (KCH)",
+        "risk": "Lower local expat volume density",
+        "complexity": {
+            "total": 460,
+            "loc": "80 hrs (Waterfront heritage hunting)",
+            "design": "120 hrs (Wabi-sabi boutique layout)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "70 hrs (East Malaysia shipping paths)"
+        },
+        "coords": [
+            1.5533,
+            110.3592
+        ],
+        "url": "sarawak.html"
+    },
+    {
+        "name": "Perth",
+        "region": "Australia",
+        "format": "Coastal Expat Spa (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 130k - 150k",
+        "opex": "USD 23,000",
+        "ticket": "USD 120",
+        "cogs": "USD 12.00",
+        "margin": "90%",
+        "breakeven": "~213 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "25.0%",
+        "pat_ratio": "83% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "39%",
+        "airport": "22 mins (PER)",
+        "risk": "Isolation & remote supply chain",
+        "complexity": {
+            "total": 420,
+            "loc": "90 hrs (Subiaco/Cottesloe)",
+            "design": "140 hrs (Coastal design & plumbing)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "80 hrs (Imported cosmetics)"
+        },
+        "coords": [
+            -31.9505,
+            115.8605
+        ],
+        "url": "perth.html"
+    },
+    {
+        "name": "Singapore",
+        "region": "Other APAC",
+        "format": "Luxury Micro-Spa / PoC",
+        "size": "650 sq ft",
+        "capex": "USD 140k - 165k",
+        "opex": "USD 22,000",
+        "ticket": "USD 140",
+        "cogs": "USD 14.00",
+        "margin": "90%",
+        "breakeven": "~175 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "17.0%",
+        "pat_ratio": "98% (Post-Tax)",
+        "payback": "7 Months",
+        "underserved": "29%",
+        "airport": "25 mins (SIN)",
+        "risk": "Extremely high rent overheads",
+        "complexity": {
+            "total": 400,
+            "loc": "100 hrs (Orchard tower search)",
+            "design": "120 hrs (Compact luxury pods)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "70 hrs (High-end product importing)"
+        },
+        "coords": [
+            1.3521,
+            103.8198
+        ],
+        "url": "singapore.html"
+    },
+    {
+        "name": "Sydney",
+        "region": "Australia",
+        "format": "Premium Boutique (MVP)",
+        "size": "800 sq ft",
+        "capex": "USD 145k - 170k",
+        "opex": "USD 27,500",
+        "ticket": "USD 120",
+        "cogs": "USD 12.00",
+        "margin": "90%",
+        "breakeven": "~255 customers",
+        "daily_breakeven": "~8-9 customers/day",
+        "tax": "25.0%",
+        "pat_ratio": "58% (Post-Tax)",
+        "payback": "10 Months",
+        "underserved": "25%",
+        "airport": "22 mins (SYD)",
+        "risk": "High overheads & DA delays",
+        "complexity": {
+            "total": 480,
+            "loc": "120 hrs (Paddington/Double Bay)",
+            "design": "160 hrs (Heritage DA acoustics & plumbing)",
+            "staff": "120 hrs (5 total headcount)",
+            "logistics": "80 hrs (Imported cosmetics)"
+        },
+        "coords": [
+            -33.8688,
+            151.2093
+        ],
+        "url": "sydney.html"
+    },
+    {
+        "name": "Kaohsiung",
+        "region": "Taiwan",
+        "format": "Metro Port PoC / MVP",
+        "size": "800 sq ft",
+        "capex": "USD 60k - 70k",
+        "opex": "USD 7,200",
+        "ticket": "USD 65",
+        "cogs": "USD 6.50",
+        "margin": "90%",
+        "breakeven": "~123 customers",
+        "daily_breakeven": "~4 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "89% (Post-Tax)",
+        "payback": "10 Months",
+        "underserved": "38%",
+        "airport": "15 mins (KHH)",
+        "risk": "Port traffic fluctuations & local salon competitors",
+        "coords": [
+            22.6273,
+            120.3014
+        ],
+        "url": "kaohsiung.html"
+    },
+    {
+        "name": "Taichung",
+        "region": "Taiwan",
+        "format": "Luxury Suite PoC",
+        "size": "1,400 sq ft",
+        "capex": "USD 150k - 180k",
+        "opex": "USD 19,500",
+        "ticket": "USD 100",
+        "cogs": "USD 8.00 - 11.00",
+        "margin": "92%",
+        "breakeven": "~217 customers",
+        "daily_breakeven": "~7 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "98% (Post-Tax)",
+        "payback": "9 Months",
+        "underserved": "55%",
+        "airport": "30 mins (RMQ)",
+        "risk": "Lobby size utilization",
+        "complexity": {
+            "total": 650,
+            "loc": "130 hrs (Xitun storefront search)",
+            "design": "220 hrs (4 VIP suites & lobby)",
+            "staff": "180 hrs (8 total headcount)",
+            "logistics": "120 hrs (High-end styling tools)"
+        },
+        "coords": [
+            24.162,
+            120.64
+        ],
+        "url": "taichung.html"
+    },
+    {
+        "name": "Tainan",
+        "region": "Taiwan",
+        "format": "Boutique Salon / PoC",
+        "size": "700 sq ft",
+        "capex": "USD 65k - 75k",
+        "opex": "USD 6,500",
+        "ticket": "USD 60",
+        "cogs": "USD 6.00",
+        "margin": "90%",
+        "breakeven": "~120 customers",
+        "daily_breakeven": "~4 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "86% (Post-Tax)",
+        "payback": "12 Months",
+        "underserved": "20%",
+        "airport": "15 mins (TNN) / 45 mins (KHH)",
+        "risk": "Lower volume density",
+        "complexity": {
+            "total": 420,
+            "loc": "90 hrs (West Central lanes)",
+            "design": "130 hrs (Wabi-sabi lane style)",
+            "staff": "120 hrs (5 total headcount)",
+            "logistics": "80 hrs (CO2 supply shipping)"
+        },
+        "coords": [
+            22.9908,
+            120.2133
+        ],
+        "url": "tainan.html"
+    },
+    {
+        "name": "Taipei",
+        "region": "Taiwan",
+        "format": "Premium Boutique Salon",
+        "size": "850 sq ft",
+        "capex": "USD 90k - 105k",
+        "opex": "USD 11,500",
+        "ticket": "USD 80",
+        "cogs": "USD 6.00 - 8.00",
+        "margin": "90% - 91%",
+        "breakeven": "~160 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "20.0%",
+        "pat_ratio": "104% (Post-Tax)",
+        "payback": "8 Months",
+        "underserved": "44%",
+        "airport": "15 mins (TSA) / 45 mins (TPE)",
+        "risk": "Intense local competition",
+        "complexity": {
+            "total": 480,
+            "loc": "100 hrs (Da'an alleyway search)",
+            "design": "150 hrs (Wabi-sabi aesthetics)",
+            "staff": "130 hrs (4 total headcount)",
+            "logistics": "100 hrs (Organic imports)"
+        },
+        "coords": [
+            25.033,
+            121.565
+        ],
+        "url": "taipei.html"
+    },
+    {
+        "name": "Fukuoka",
+        "region": "Japan",
+        "format": "Premium Boutique (MVP)",
+        "size": "900 sq ft",
+        "capex": "USD 95k - 110k",
+        "opex": "USD 12,000",
+        "ticket": "USD 75",
+        "cogs": "USD 7.50",
+        "margin": "90%",
+        "breakeven": "~178 customers",
+        "daily_breakeven": "~6 customers/day",
+        "tax": "30.6%",
+        "pat_ratio": "78% (Post-Tax)",
+        "payback": "11 Months",
+        "underserved": "30%",
+        "airport": "15 mins (FUK)",
+        "risk": "High local competition & high tax rate",
+        "complexity": {
+            "total": 490,
+            "loc": "80 hrs (Tenjin prime storefront search)",
+            "design": "130 hrs (Premium luxury spa layout)",
+            "staff": "120 hrs (Staff licensing compliance)",
+            "logistics": "160 hrs (Local premium product distribution)"
+        },
+        "coords": [
+            33.5902,
+            130.4017
+        ],
+        "url": "fukuoka.html"
+    },
+    {
+        "name": "Okinawa",
+        "region": "Japan",
+        "format": "Seaside Resort PoC / MVP",
+        "size": "800 sq ft",
+        "capex": "USD 60k - 70k",
+        "opex": "USD 7,500",
+        "ticket": "USD 55",
+        "cogs": "USD 5.50",
+        "margin": "90%",
+        "breakeven": "~152 customers",
+        "daily_breakeven": "~5 customers/day",
+        "tax": "30.6%",
+        "pat_ratio": "80% (Post-Tax)",
+        "payback": "11 Months",
+        "underserved": "52%",
+        "airport": "10 mins (OKA)",
+        "risk": "Seasonal tourist fluctuations & typhoon risk",
+        "complexity": {
+            "total": 480,
+            "loc": "80 hrs (Naha tourist hub search)",
+            "design": "120 hrs (Seaside resort pod layout)",
+            "staff": "110 hrs (5 total headcount)",
+            "logistics": "70 hrs (Ocean freight shipping lines)"
+        },
+        "coords": [
+            26.2124,
+            127.6809
+        ],
+        "url": "okinawa.html"
+    },
+    {
+        "name": "Busan",
+        "region": "South Korea",
+        "format": "Coastal Luxury Suite (MVP)",
+        "size": "900 sq ft",
+        "capex": "USD 85k - 100k",
+        "opex": "USD 11,000",
+        "ticket": "USD 70",
+        "cogs": "USD 7.00",
+        "margin": "90%",
+        "breakeven": "~175 customers",
+        "daily_breakeven": "~5-6 customers/day",
+        "tax": "22.0%",
+        "pat_ratio": "85% (Post-Tax)",
+        "payback": "10 Months",
+        "underserved": "42%",
+        "airport": "30 mins (PUS)",
+        "risk": "Staff recruitment award rates & local chains",
+        "complexity": {
+            "total": 500,
+            "loc": "90 hrs (Haeundae beachfront search)",
+            "design": "130 hrs (VIP seaside wellness pod layout)",
+            "staff": "130 hrs (Local service culture coaching)",
+            "logistics": "150 hrs (Korean organic cosmetic distribution)"
+        },
+        "coords": [
+            35.1796,
+            129.0756
+        ],
+        "url": "busan.html"
+    },
+    {
+        "name": "Dubai",
+        "region": "Middle East",
+        "format": "Ultra-Luxury Suite (MVP)",
+        "size": "1,200 sq ft",
+        "capex": "USD 180k - 220k",
+        "opex": "USD 32,000",
+        "ticket": "USD 160",
+        "cogs": "USD 16.00",
+        "margin": "90%",
+        "breakeven": "~247 customers",
+        "daily_breakeven": "~8 customers/day",
+        "tax": "9.0%",
+        "pat_ratio": "125% (Post-Tax)",
+        "payback": "5 Months",
+        "underserved": "60%",
+        "airport": "15 mins (DXB)",
+        "risk": "High setup barrier & rent overheads",
+        "complexity": {
+            "total": 640,
+            "loc": "120 hrs (Mainland freezone setup)",
+            "design": "180 hrs (Deluxe VIP suite fitout)",
+            "staff": "140 hrs (Talent visa & high training)",
+            "logistics": "100 hrs (Gulf customs clearance)"
+        },
+        "coords": [
+            25.2048,
+            55.2708
+        ],
+        "url": "dubai.html"
+    }
+];
+
+    // Helper functions to get model adjusted values
+    function getModelFormat(baseFormat, model) {
+        if (model === 'spa') return baseFormat;
+        return baseFormat
+            .replace("Boutique (MVP)", "Boutique Salon (MVP)")
+            .replace("Boutique PoC", "Boutique Salon PoC")
+            .replace("Luxury Suite PoC", "Luxury Salon Suite PoC")
+            .replace("Boutique Salon / PoC", "Boutique Salon PoC")
+            .replace("Luxury Suite", "Salon Suite")
+            .replace("Ultra-Luxury Suite", "Premium Salon Suite")
+            .replace("Micro-Spa", "Micro-Salon")
+            .replace("Expat PoC", "Expat Salon PoC")
+            .replace("Expat PoC / MVP", "Expat Salon PoC / MVP")
+            .replace("Seaside Resort PoC / MVP", "Seaside Resort Salon PoC / MVP")
+            .replace("Metro Port PoC / MVP", "Metro Port Salon PoC / MVP")
+            .replace("Cross-Border PoC", "Cross-Border Salon PoC")
+            .replace("Aesthetic Lane Spa", "Aesthetic Lane Salon")
+            .replace("Hair Spa", "Hair Salon")
+            .replace("Spa", "Salon");
+    }
+
+    function getModelCapex(baseCapex, model) {
+        if (model === 'spa') return baseCapex;
+        return baseCapex.replace(/(\d+)k/g, (match, p1) => {
+            return Math.round(parseInt(p1) * 0.60) + "k";
+        });
+    }
+
+    function getModelOpex(baseOpex, model) {
+        if (model === 'spa') return baseOpex;
+        return baseOpex.replace(/([0-9,]+)/g, (match, p1) => {
+            const val = parseInt(p1.replace(/,/g, ''));
+            return Math.round(val * 0.80).toLocaleString();
+        });
+    }
+
+    function getModelTicket(baseTicket, model) {
+        if (model === 'spa') return baseTicket;
+        return baseTicket.replace(/([0-9,]+)/g, (match, p1) => {
+            const val = parseInt(p1.replace(/,/g, ''));
+            return Math.round(val * 0.65).toLocaleString();
+        });
+    }
+
+    function getModelCogs(baseCogs, model, ticketVal) {
+        if (model === 'spa') return baseCogs;
+        const cogsVal = ticketVal * 0.10;
+        return "USD " + cogsVal.toFixed(2);
+    }
+
+    function getModelComplexity(baseComplexity, model) {
+        if (model === 'spa' || !baseComplexity) return baseComplexity;
+        
+        let designHrs = 0;
+        const match = baseComplexity.design.match(/(\d+)\s*hrs/);
+        if (match) {
+            designHrs = parseInt(match[1]);
+        }
+        
+        const designRed = Math.round(designHrs * 0.50);
+        const newDesign = baseComplexity.design.replace(/(\d+)\s*hrs/, (match, p1) => {
+            return (parseInt(p1) - designRed) + " hrs";
+        });
+        
+        const newTotal = baseComplexity.total - designRed;
+        
+        return {
+            total: newTotal,
+            loc: baseComplexity.loc,
+            design: newDesign.replace("VIP pods", "styling stations").replace("VIP suites", "styling suites").replace("VIP starlight", "lighting designs"),
+            staff: baseComplexity.staff.replace("VIP", "Stylist"),
+            logistics: baseComplexity.logistics.replace("OEM wash beds", "styling chairs")
+        };
+    }
 
     // ==========================================
     // DYNAMIC SIDEBAR SELECTOR & CITY LIST RENDER
@@ -658,21 +1631,601 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             // Immediately apply active language hash propagation on links
-            updateLinkHashes(getActiveLanguage());
+            const state = getActiveState();
+            updateLinkHashes(state.lang, state.model);
         }
 
         // Render city list initial state
         renderCityList(initialRegion);
+        
+        // Dynamically inject the model selector switch below language switcher
+        const langSelector = document.querySelector('.lang-selector');
+        if (langSelector) {
+            let modelSelector = document.querySelector('.model-selector');
+            if (!modelSelector) {
+                modelSelector = document.createElement('div');
+                modelSelector.className = 'model-selector';
+                
+                const spaBtn = document.createElement('button');
+                spaBtn.className = 'model-btn';
+                spaBtn.setAttribute('data-model', 'spa');
+                spaBtn.textContent = '💆‍♀️ Hair Spa';
+                
+                const salonBtn = document.createElement('button');
+                salonBtn.className = 'model-btn';
+                salonBtn.setAttribute('data-model', 'salon');
+                salonBtn.textContent = '✂️ Pure Salon';
+                
+                modelSelector.appendChild(spaBtn);
+                modelSelector.appendChild(salonBtn);
+                
+                langSelector.parentNode.insertBefore(modelSelector, langSelector.nextSibling);
+                
+                // Bind toggle event listeners
+                const state = getActiveState();
+                const btns = [spaBtn, salonBtn];
+                
+                btns.forEach(btn => {
+                    const m = btn.getAttribute('data-model');
+                    if (m === state.model) btn.classList.add('active');
+                    
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        btns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        try {
+                            localStorage.setItem('selectedModel', m);
+                        } catch (err) {}
+                        
+                        const currentBaseUrl = window.location.href.split('#')[0];
+                        const s = getActiveState();
+                        
+                        const hashParts = [];
+                        if (s.lang !== 'en') hashParts.push(s.lang);
+                        if (m !== 'spa') hashParts.push(m);
+                        
+                        const currentHash = window.location.hash.substring(1);
+                        let anchor = '';
+                        if (currentHash) {
+                            const cleanAnchor = currentHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
+                            anchor = cleanAnchor;
+                        }
+                        if (anchor) hashParts.push(anchor);
+                        
+                        window.location.href = `${currentBaseUrl}#${hashParts.join('-')}`;
+                        
+                        // Dynamically update components
+                        updatePlatformComponents();
+                    });
+                });
+            }
+        }
     }
 
-    // Execute dynamic sidebar generation
+    // ==========================================
+    // PAGE UPDATERS & STATE SYNC
+    // ==========================================
+    let mapInstance = null;
+    let mapMarkers = [];
+
+    function updatePlatformComponents() {
+        const state = getActiveState();
+        const pathname = window.location.pathname;
+        const currentPage = pathname.substring(pathname.lastIndexOf('/') + 1) || 'index.html';
+        const isDashboard = currentPage === 'index.html' || currentPage === '';
+        
+        // 1. Update side bar link hashes
+        updateLinkHashes(state.lang, state.model);
+        
+        // Translate model selector buttons
+        const spaBtn = document.querySelector('.model-btn[data-model="spa"]');
+        const salonBtn = document.querySelector('.model-btn[data-model="salon"]');
+        if (spaBtn && salonBtn) {
+            const translations = state.lang === 'ja' ? jaTranslations : (state.lang === 'vi' ? viTranslations : null);
+            if (translations) {
+                spaBtn.textContent = '💆‍♀️ ' + (translations["Hair Spa"] || "Hair Spa");
+                salonBtn.textContent = '✂️ ' + (translations["Pure Salon"] || "Pure Salon");
+            } else {
+                spaBtn.textContent = '💆‍♀️ Hair Spa';
+                salonBtn.textContent = '✂️ Pure Salon';
+            }
+            // Sync active state class
+            spaBtn.classList.remove('active');
+            salonBtn.classList.remove('active');
+            if (state.model === 'spa') spaBtn.classList.add('active');
+            else salonBtn.classList.add('active');
+        }
+
+        if (isDashboard) {
+            // Populate Dashboard Tables
+            populateDashboardTables(state.model);
+            // Re-render Map Markers
+            renderMapMarkers(state.model);
+        } else {
+            // Update Subpage contents
+            updateSubpageContent(currentPage, state.model);
+        }
+        
+        // Apply Global Translations
+        if (state.lang !== 'en') {
+            translateDOM(document.body);
+        }
+    }
+
+    // POPULATE DASHBOARD TABLES ON INDEX.HTML
+    function populateDashboardTables(model) {
+        const overviewTbody = document.getElementById('overview-table-body');
+        const complexityTbody = document.getElementById('complexity-table-body');
+        if (!overviewTbody || !complexityTbody) return;
+
+        overviewTbody.innerHTML = '';
+        complexityTbody.innerHTML = '';
+
+        citiesDb.forEach(city => {
+            const sizeStr = city.size;
+            const capexStr = getModelCapex(city.capex, model);
+            const opexStr = getModelOpex(city.opex, model);
+            const ticketStr = getModelTicket(city.ticket, model);
+            
+            // Values for math
+            const ticketVal = Math.round(city.ticketVal * (model === 'spa' ? 1.0 : 0.65));
+            const opexVal = Math.round(city.opexVal * (model === 'spa' ? 1.0 : 0.80));
+            const capexVal = Math.round(city.capexVal * (model === 'spa' ? 1.0 : 0.60));
+            const volumeBase = Math.round(city.volume * (model === 'spa' ? 1.0 : 1.15));
+            const taxRate = city.taxVal;
+
+            const cogsVal = ticketVal * 0.10;
+            const contribMargin = ticketVal - cogsVal;
+            const monthlyBreakeven = Math.round(opexVal / contribMargin);
+            const dailyBreakeven = (monthlyBreakeven / 30).toFixed(1);
+
+            const preTaxPAT = (volumeBase * contribMargin) - opexVal;
+            const taxVal = preTaxPAT > 0 ? preTaxPAT * taxRate : 0;
+            const pat = preTaxPAT - taxVal;
+            const ratio = Math.round((pat / opexVal) * 100);
+            const payback = pat > 0 ? Math.round(capexVal / pat) : 0;
+
+            const paybackStr = payback > 0 ? `${payback} Months` : "N/A";
+            const ratioStr = `${ratio}% (Post-Tax)`;
+            const formatStr = getModelFormat(city.format, model);
+            const cogsStr = "USD " + cogsVal.toFixed(2);
+            const breakevenStr = `~${monthlyBreakeven} customers`;
+            const dailyBreakevenStr = `~${dailyBreakeven} customers/day`;
+
+            // Row 1: Overview
+            const trOverview = document.createElement('tr');
+            trOverview.setAttribute('data-region', city.region);
+            trOverview.setAttribute('data-city', city.name);
+            
+            trOverview.innerHTML = `
+                <td><strong><a href="${city.url}" style="color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px dashed rgba(198,168,124,0.4);">${city.name}</a></strong></td>
+                <td>${formatStr}</td>
+                <td>${sizeStr}</td>
+                <td>${capexStr}</td>
+                <td>${opexStr}</td>
+                <td>${ticketStr}</td>
+                <td>${cogsStr}</td>
+                <td>90%</td>
+                <td>${breakevenStr}</td>
+                <td>${dailyBreakevenStr}</td>
+                <td>${(taxRate * 100).toFixed(1)}%</td>
+                <td>${ratioStr}</td>
+                <td>${paybackStr}</td>
+                <td>${city.underserved}</td>
+                <td>${city.airport}</td>
+                <td>${city.risk}</td>
+            `;
+            overviewTbody.appendChild(trOverview);
+
+            // Row 2: Complexity
+            const comp = getModelComplexity(city.complexity, model);
+            if (comp) {
+                const trComp = document.createElement('tr');
+                trComp.setAttribute('data-region', city.region);
+                trComp.setAttribute('data-city', city.name);
+                trComp.innerHTML = `
+                    <td><strong><a href="${city.url}" style="color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px dashed rgba(198,168,124,0.4);">${city.name}</a> (${comp.total} hrs)</strong></td>
+                    <td>${comp.loc}</td>
+                    <td>${comp.design}</td>
+                    <td>${comp.staff}</td>
+                    <td>${comp.logistics}</td>
+                `;
+                complexityTbody.appendChild(trComp);
+            }
+        });
+        
+        // Reapply current search/tab filters
+        if (typeof applyFilters === 'function') {
+            applyFilters('overview');
+            applyFilters('complexity');
+        }
+    }
+
+    // MAP RENDERING LOGIC ON DASHBOARD
+    function renderMapMarkers(model) {
+        if (typeof L === 'undefined' || !document.getElementById('map')) return;
+
+        // Create Leaflet map if not initialized
+        if (!mapInstance) {
+            mapInstance = L.map('map', {
+                scrollWheelZoom: true,
+            }).setView([15.0, 112.0], 4.5);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(mapInstance);
+            
+            // Auto-fit bounds initially
+            const markerCoords = citiesDb.map(city => city.coords);
+            if (markerCoords.length > 0) {
+                mapInstance.fitBounds(markerCoords, { padding: [50, 50] });
+            }
+        }
+
+        // Remove existing markers
+        mapMarkers.forEach(m => mapInstance.removeLayer(m));
+        mapMarkers = [];
+
+        // Helper calculations
+        const getColor = (payback) => {
+            if (payback <= 6) return "#10b981"; // Emerald green (5-6 months)
+            if (payback <= 8) return "#eab308"; // Amber yellow (7-8 months)
+            if (payback <= 10) return "#f97316"; // Orange (9-10 months)
+            return "#ef4444"; // Red (11-12 months)
+        };
+
+        const getOpacity = (capex) => {
+            const minCapex = 30000;
+            const maxCapex = 180000;
+            const minOpacity = 0.25;
+            const maxOpacity = 0.95;
+            if (capex <= minCapex) return maxOpacity;
+            if (capex >= maxCapex) return minOpacity;
+            return maxOpacity - ((capex - minCapex) / (maxCapex - minCapex)) * (maxOpacity - minOpacity);
+        };
+
+        const getRadius = (underservedStr) => {
+            const pct = parseInt(underservedStr) || 0;
+            const minPct = 20;
+            const maxPct = 70;
+            const minRad = 6;
+            const maxRad = 16;
+            if (pct <= minPct) return minRad;
+            if (pct >= maxPct) return maxRad;
+            return minRad + ((pct - minPct) / (maxPct - minPct)) * (maxRad - minRad);
+        };
+
+        // Render markers
+        citiesDb.forEach(city => {
+            const ticketVal = Math.round(city.ticketVal * (model === 'spa' ? 1.0 : 0.65));
+            const opexVal = Math.round(city.opexVal * (model === 'spa' ? 1.0 : 0.80));
+            const capexVal = Math.round(city.capexVal * (model === 'spa' ? 1.0 : 0.60));
+            const volumeBase = Math.round(city.volume * (model === 'spa' ? 1.0 : 1.15));
+            const taxRate = city.taxVal;
+
+            const cogsVal = ticketVal * 0.10;
+            const contribMargin = ticketVal - cogsVal;
+            const monthlyBreakeven = Math.round(opexVal / contribMargin);
+
+            const preTaxPAT = (volumeBase * contribMargin) - opexVal;
+            const taxVal = preTaxPAT > 0 ? preTaxPAT * taxRate : 0;
+            const pat = preTaxPAT - taxVal;
+            const ratio = Math.round((pat / opexVal) * 100);
+            const payback = pat > 0 ? Math.round(capexVal / pat) : 0;
+
+            const color = getColor(payback);
+            const opacity = getOpacity(capexVal);
+            const radius = getRadius(city.underserved);
+
+            const formatStr = getModelFormat(city.format, model);
+            const capexStr = getModelCapex(city.capex, model);
+            const opexStr = getModelOpex(city.opex, model);
+            const paybackStr = payback > 0 ? `${payback} Months` : "N/A";
+            const ratioStr = `${ratio}% (Post-Tax)`;
+
+            const customIcon = L.divIcon({
+                html: `<div class="dynamic-marker" style="--marker-color: ${color}; width: ${radius * 2}px; height: ${radius * 2}px; background: ${color}; opacity: ${opacity};"></div>`,
+                className: 'custom-leaflet-icon',
+                iconSize: [radius * 2, radius * 2],
+                iconAnchor: [radius, radius]
+            });
+
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${city.name}</h3>
+                    <p>Format: <strong>${formatStr}</strong></p>
+                    <p>Initial CAPEX: <strong>${capexStr}</strong></p>
+                    <p>Monthly OPEX: <strong>${opexStr}</strong></p>
+                    <p>Post-Tax Payback: <strong>${paybackStr}</strong></p>
+                    <p>Post-Tax Profit/OPEX: <strong>${ratioStr}</strong></p>
+                    <p>Underserved Gap: <strong>${city.underserved}</strong></p>
+                    <p>Nearest Airport: <strong>${city.airport}</strong></p>
+                    <a href="${city.url}" class="popup-btn">View Detailed Study</a>
+                </div>
+            `;
+            
+            const marker = L.marker(city.coords, { icon: customIcon }).addTo(mapInstance).bindPopup(popupContent);
+            mapMarkers.push(marker);
+        });
+    }
+
+    // UPDATE DYNAMIC SUBPAGE CONTENT ON LOAD
+    function updateSubpageContent(url, model) {
+        const city = citiesDb.find(c => url.includes(c.url));
+        if (!city) return;
+
+        // Parameters
+        const ticketVal = Math.round(city.ticketVal * (model === 'spa' ? 1.0 : 0.65));
+        const opexVal = Math.round(city.opexVal * (model === 'spa' ? 1.0 : 0.80));
+        const capexVal = Math.round(city.capexVal * (model === 'spa' ? 1.0 : 0.60));
+        const volumeBase = Math.round(city.volume * (model === 'spa' ? 1.0 : 1.15));
+        const taxRate = city.taxVal;
+
+        const cogsVal = ticketVal * 0.10;
+        const contribMargin = ticketVal - cogsVal;
+        const monthlyBreakeven = Math.round(opexVal / contribMargin);
+        const dailyBreakeven = Math.round(monthlyBreakeven / 30);
+
+        const formatStr = getModelFormat(city.format, model);
+        const capexStr = getModelCapex(city.capex, model);
+        const opexStr = getModelOpex(city.opex, model);
+        const ticketStr = getModelTicket(city.ticket, model);
+
+        // 1. Update Hero Subtitle Model Info
+        const subtitleEl = document.querySelector('.hero .subtitle');
+        if (subtitleEl) {
+            subtitleEl.textContent = subtitleEl.textContent.replace("Feasibility Study", model === 'spa' ? "Feasibility Study" : "Standard Salon Feasibility");
+        }
+        
+        const heroMetaEl = document.querySelector('.hero .hero-meta');
+        if (heroMetaEl) {
+            const spans = Array.from(heroMetaEl.querySelectorAll('span'));
+            spans.forEach(s => {
+                if (s.textContent.includes("Model:")) {
+                    s.innerHTML = `Model: ${formatStr}`;
+                }
+            });
+        }
+
+        // 2. Update Stats Boxes (Grid Stats)
+        const statsGrid = document.querySelector('.grid-stats');
+        if (statsGrid) {
+            const boxes = Array.from(statsGrid.querySelectorAll('.stat-box'));
+            boxes.forEach(box => {
+                const label = box.querySelector('.label').textContent.trim();
+                const valueEl = box.querySelector('.value');
+                if (label.includes("Initial CAPEX")) {
+                    valueEl.textContent = capexStr;
+                } else if (label.includes("Monthly OPEX")) {
+                    valueEl.textContent = opexStr;
+                } else if (label.includes("Average Ticket")) {
+                    valueEl.textContent = ticketStr;
+                } else if (label.includes("Breakeven Volume")) {
+                    valueEl.textContent = `${dailyBreakeven} Customers / Day`;
+                }
+            });
+        }
+
+        // 3. Update OPEX and CAPEX tables
+        scaleOPEXTable(model === 'spa' ? 1.0 : 0.80);
+        scaleCAPEXTable(model === 'spa' ? 1.0 : 0.60);
+
+        // 4. Update Unit Economics Scenario Table
+        updateEconomicsTable(ticketVal, opexVal, volumeBase, taxRate, capexVal);
+
+        // 5. Update Timeline duration Weeks
+        updateTimelineTable(model);
+
+        // 6. Update Recommendation Box Setup beds description
+        const recBox = document.querySelector('#recommendation .conclusion-box');
+        if (recBox) {
+            const recTitle = recBox.querySelector('h3');
+            if (recTitle) {
+                recTitle.textContent = model === 'spa' ? "Decision: GO (Industrial Corridor PoC)" : "Decision: GO (Standard Salon PoC)";
+            }
+            const items = recBox.querySelectorAll('ul li');
+            items.forEach(li => {
+                if (li.textContent.includes("Setup:")) {
+                    li.textContent = model === 'spa' ? "Setup: 4 VIP Beds (OEM), 800 sq ft" : "Setup: 4 Styling Chairs, 800 sq ft";
+                } else if (li.textContent.includes("Budget Ceiling:")) {
+                    li.textContent = `Budget Ceiling: ${capexStr}`;
+                }
+            });
+        }
+    }
+
+    // Helper functions for table scaling in subpages
+    function scaleOPEXTable(factor) {
+        const opexTable = document.querySelector('#opex table');
+        if (!opexTable) return;
+        const rows = Array.from(opexTable.querySelectorAll('tbody tr'));
+        let items = [];
+        let total = 0;
+        rows.forEach((row) => {
+            if (row.classList.contains('total-row')) return;
+            const costCell = row.cells[1];
+            if (costCell) {
+                const text = costCell.textContent.trim();
+                const val = parseInt(text.replace(/[^0-9]/g, ''));
+                if (!isNaN(val)) {
+                    const newVal = Math.round(val * factor);
+                    costCell.textContent = `$${newVal.toLocaleString()}`;
+                    total += newVal;
+                    items.push({ row, val: newVal });
+                }
+            }
+        });
+        
+        const totalRow = opexTable.querySelector('.total-row');
+        if (totalRow) {
+            const totalCell = totalRow.cells[1];
+            if (totalCell) {
+                totalCell.innerHTML = `<strong>$${total.toLocaleString()}</strong>`;
+            }
+        }
+        
+        items.forEach(item => {
+            const pctCell = item.row.cells[2];
+            if (pctCell) {
+                const pct = total > 0 ? Math.round((item.val / total) * 100) : 0;
+                pctCell.textContent = `${pct}%`;
+            }
+        });
+    }
+
+    function scaleCAPEXTable(factor) {
+        const capexTable = document.querySelector('#capex table');
+        if (!capexTable) return;
+        const rows = Array.from(capexTable.querySelectorAll('tbody tr'));
+        let total = 0;
+        rows.forEach((row) => {
+            if (row.classList.contains('total-row')) return;
+            const costCell = row.cells[1];
+            if (costCell) {
+                const text = costCell.textContent.trim();
+                const val = parseInt(text.replace(/[^0-9]/g, ''));
+                if (!isNaN(val)) {
+                    const newVal = Math.round(val * factor);
+                    costCell.textContent = `$${newVal.toLocaleString()}`;
+                    total += newVal;
+                }
+            }
+        });
+        
+        const totalRow = capexTable.querySelector('.total-row');
+        if (totalRow) {
+            const totalCell = totalRow.cells[1];
+            if (totalCell) {
+                totalCell.innerHTML = `<strong>$${total.toLocaleString()}</strong>`;
+            }
+        }
+    }
+
+    function updateEconomicsTable(ticket, opex, baseVol, taxRate, capexMid) {
+        const econTable = document.querySelector('#economics table');
+        if (!econTable) return;
+        const rows = Array.from(econTable.querySelectorAll('tbody tr'));
+        
+        const cogs = ticket * 0.10;
+        const contribMargin = ticket - cogs;
+        
+        const scenarios = [
+            { name: "Breakeven Case", vol: Math.round(opex / contribMargin) },
+            { name: "Base Case", vol: Math.round(baseVol) },
+            { name: "High-Performance Case", vol: Math.round(baseVol * 1.25) }
+        ];
+        
+        scenarios.forEach((scen, idx) => {
+            const row = rows[idx];
+            if (!row) return;
+            
+            const rev = scen.vol * ticket;
+            const cogVal = scen.vol * cogs;
+            const netProfit = rev - cogVal - opex;
+            
+            if (row.cells[1]) row.cells[1].textContent = `${scen.vol.toLocaleString()} customers`;
+            if (row.cells[2]) row.cells[2].textContent = `$${Math.round(rev).toLocaleString()}`;
+            if (row.cells[3]) row.cells[3].textContent = `$${Math.round(cogVal).toLocaleString()}`;
+            if (row.cells[4]) row.cells[4].textContent = `$${Math.round(opex).toLocaleString()}`;
+            if (row.cells[5]) row.cells[5].textContent = `$${Math.round(netProfit).toLocaleString()}`;
+        });
+        
+        const conclusionBox = document.querySelector('#economics .conclusion-box');
+        if (conclusionBox) {
+            const preTaxPAT = (baseVol * contribMargin) - opex;
+            const taxVal = preTaxPAT > 0 ? preTaxPAT * taxRate : 0;
+            const pat = preTaxPAT - taxVal;
+            const ratio = Math.round((pat / opex) * 100);
+            const payback = pat > 0 ? (capexMid / pat).toFixed(1) : "N/A";
+            
+            const lang = getActiveState().lang;
+            const isJa = lang === 'ja';
+            const isVi = lang === 'vi';
+            
+            let html = '';
+            if (isJa) {
+                html = `
+                    <h3 style="color: var(--success); font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-heading);">税後財務フィジビリティ分析</h3>
+                    <p>上記テーブル内の数値はすべて税引前の値です。各都市の法人税率 <strong>${(taxRate * 100).toFixed(1)}%</strong> を反映した、基本シナリオの税後シミュレーションは以下の通りです:</p>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
+                        <li><strong>基本シナリオ 税引前月間純利益:</strong> USD ${Math.round(preTaxPAT).toLocaleString()}</li>
+                        <li><strong>推定月間法人税額:</strong> USD ${Math.round(taxVal).toLocaleString()}</li>
+                        <li><strong>税引後月間純利益 (PAT):</strong> USD ${Math.round(pat).toLocaleString()}</li>
+                        <li><strong>税引後利益/運営費比率:</strong> <strong>${ratio}% (税後)</strong></li>
+                        <li><strong>税引後投資回収期間:</strong> <strong>${payback}ヶ月</strong></li>
+                    </ul>
+                `;
+            } else if (isVi) {
+                html = `
+                    <h3 style="color: var(--success); font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-heading);">Phân tích tính khả thi tài chính sau thuế</h3>
+                    <p>Tất cả các tính toán trong bảng trên đại diện cho hiệu suất trước thuế. Tính thêm thuế suất TNDN <strong>${(taxRate * 100).toFixed(1)}%</strong> chúng ta có các dự báo sau thuế cho kịch bản cơ sở như sau:</p>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
+                        <li><strong>Lợi nhuận thuần trước thuế (Kịch bản cơ sở):</strong> USD ${Math.round(preTaxPAT).toLocaleString()}</li>
+                        <li><strong>Thuế thu nhập doanh nghiệp ước tính:</strong> USD ${Math.round(taxVal).toLocaleString()}</li>
+                        <li><strong>Lợi nhuận thuần sau thuế hàng tháng (PAT):</strong> USD ${Math.round(pat).toLocaleString()}</li>
+                        <li><strong>Tỷ lệ lợi nhuận sau thuế / OPEX:</strong> <strong>${ratio}% (sau thuế)</strong></li>
+                        <li><strong>Thời gian hoàn vốn sau thuế:</strong> <strong>${payback} tháng</strong></li>
+                    </ul>
+                `;
+            } else {
+                html = `
+                    <h3 style="color: var(--success); font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-heading);">Post-Tax Financial Feasibility Analysis</h3>
+                    <p>All calculations in the table above represent pre-tax performance. Factoring in the local Corporate Income Tax (CIT) rate of <strong>${(taxRate * 100).toFixed(1)}%</strong>, we arrive at the following post-tax projections for the Base Case:</p>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
+                        <li><strong>Base Case Pre-Tax Monthly Net Profit:</strong> USD ${Math.round(preTaxPAT).toLocaleString()}</li>
+                        <li><strong>Estimated Monthly Corporate Income Tax:</strong> USD ${Math.round(taxVal).toLocaleString()}</li>
+                        <li><strong>Post-Tax Net Monthly Profit (PAT):</strong> USD ${Math.round(pat).toLocaleString()}</li>
+                        <li><strong>Post-Tax Profit to OPEX Ratio:</strong> <strong>${ratio}% (Post-Tax)</strong></li>
+                        <li><strong>Post-Tax CAPEX Payback Period:</strong> <strong>${payback} Months</strong></li>
+                    </ul>
+                `;
+            }
+            conclusionBox.innerHTML = html;
+        }
+    }
+
+    function updateTimelineTable(model) {
+        const timelineTable = document.querySelector('#timeline table');
+        if (!timelineTable) return;
+        const rows = timelineTable.querySelectorAll('tbody tr');
+        if (rows.length < 4) return;
+        
+        if (model === 'salon') {
+            rows[1].cells[1].textContent = "Weeks 5 - 7";
+            rows[1].cells[2].textContent = rows[1].cells[2].textContent.replace("OEM wash beds installed", "standard styling stations installed");
+            
+            rows[2].cells[1].textContent = "Weeks 8 - 9";
+            rows[2].cells[2].textContent = rows[2].cells[2].textContent.replace("Omotenashi service coaching", "standard styling service coaching");
+            
+            rows[3].cells[1].textContent = "Week 10+";
+        } else {
+            rows[1].cells[1].textContent = "Weeks 5 - 9";
+            rows[1].cells[2].textContent = rows[1].cells[2].textContent.replace("standard styling stations installed", "OEM wash beds installed");
+            
+            rows[2].cells[1].textContent = "Weeks 10 - 11";
+            rows[2].cells[2].textContent = rows[2].cells[2].textContent.replace("standard styling service coaching", "Omotenashi service coaching");
+            
+            rows[3].cells[1].textContent = "Week 12+";
+        }
+    }
+
+    // ==========================================
+    // INITIALIZATION CODE
+    // ==========================================
+    // Execute sidebar generation
     renderSidebar();
 
-    // Auto-update Leaflet global instance if available
+    // Execute Global Page updates (Calculations, maps, table structures)
+    updatePlatformComponents();
+
+    // Auto-update Leaflet global instance if available on subpages
     if (typeof L !== 'undefined' && L.Map) {
         L.Map.addInitHook(function() {
             this.on('popupopen', function(e) {
-                if (getActiveLanguage() !== 'en') {
+                if (getActiveState().lang !== 'en') {
                     const popupNode = e.popup.getElement();
                     if (popupNode) {
                         translateDOM(popupNode);
@@ -682,49 +2235,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Translate global cities array if we are on index.html
-    if (currentLang !== 'en' && typeof cities !== 'undefined') {
-        const trans = currentLang === 'ja' ? jaTranslations : viTranslations;
-        cities.forEach(c => {
-            if (trans[c.name]) c.name = trans[c.name];
-            if (trans[c.format]) c.format = trans[c.format];
-            if (trans[c.capex]) c.capex = trans[c.capex].replace("USD", "$").replace("k", " nghìn USD");
-            if (trans[c.opex]) c.opex = trans[c.opex].replace("USD", "$");
-            if (trans[c.payback]) c.payback = trans[c.payback].replace("Months", currentLang === 'ja' ? "ヶ月" : " tháng").replace("Month", currentLang === 'ja' ? "ヶ月" : " tháng");
-            if (trans[c.ratio]) c.ratio = trans[c.ratio];
-            if (trans[c.airportTime]) {
-                c.airportTime = c.airportTime
-                    .replace("mins", currentLang === 'ja' ? "分" : " phút")
-                    .replace("min", currentLang === 'ja' ? "分" : " phút");
-            }
-        });
-    }
-
-    // Translate the DOM
-    if (currentLang !== 'en') {
-        translateDOM(document.body);
-    }
-
-    // Run link hash updating so all outgoing routes carry the active language hash parameter
-    updateLinkHashes(currentLang);
-
-    // Scroll to anchor programmatically if hash contains section anchors (e.g. #ja-overview-table)
-    const hash = window.location.hash;
-    if (hash && hash.includes('-')) {
-        const targetId = hash.split('-')[1];
-        const targetEl = document.getElementById(targetId);
-        if (targetEl) {
-            setTimeout(() => {
-                targetEl.scrollIntoView({ behavior: 'smooth' });
-            }, 150);
-        }
-    }
-
     // Configure language switcher buttons
     const langBtns = document.querySelectorAll('.lang-btn');
     langBtns.forEach(btn => {
         const btnLang = btn.getAttribute('data-lang');
-        if (btnLang === currentLang) {
+        const state = getActiveState();
+        
+        if (btnLang === state.lang) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
@@ -732,18 +2249,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetLang = btn.getAttribute('data-lang');
             try {
-                localStorage.setItem('selectedLanguage', targetLang);
+                localStorage.setItem('selectedLanguage', btnLang);
             } catch (err) {}
             
-            // Reload with the new hash
             const currentBaseUrl = window.location.href.split('#')[0];
-            if (targetLang === 'en') {
-                window.location.href = currentBaseUrl; // No hash for English
-            } else {
-                window.location.href = `${currentBaseUrl}#${targetLang}`;
+            const s = getActiveState();
+            
+            const hashParts = [];
+            if (btnLang !== 'en') hashParts.push(btnLang);
+            if (s.model !== 'spa') hashParts.push(s.model);
+            
+            const currentHash = window.location.hash.substring(1);
+            let anchor = '';
+            if (currentHash) {
+                const cleanAnchor = currentHash.replace(/^(ja|vi)-/, '').replace(/^(spa|salon)-/, '').replace(/^(ja|vi)-(spa|salon)-/, '');
+                anchor = cleanAnchor;
             }
+            if (anchor) hashParts.push(anchor);
+            
+            window.location.href = `${currentBaseUrl}#${hashParts.join('-')}`;
+            
+            // Re-apply translation
+            updatePlatformComponents();
+            
+            // Highlight active button
+            langBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         });
     });
 
@@ -805,3 +2337,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
 });
+
+// Expose filter functions globally so onclick events can trigger them
+window.filterTable = function(region, type) {
+    const tableId = type === 'overview' ? 'overview-table' : 'complexity';
+    const buttons = document.querySelectorAll(`#${tableId} .tab-btn`);
+    buttons.forEach(btn => {
+        if (btn.dataset.region === region) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Apply filters
+    applyFilters(type);
+};
+
+window.filterTableBySearch = function(type) {
+    applyFilters(type);
+};
+
+function applyFilters(type) {
+    const tableId = type === 'overview' ? 'overview-table' : 'complexity';
+    const activeTab = document.querySelector(`#${tableId} .tab-btn.active`).dataset.region;
+    const query = document.querySelector(`#${tableId} .search-input`).value.toLowerCase();
+    
+    const rows = document.querySelectorAll(`#${tableId} table tbody tr`);
+    rows.forEach(row => {
+        const region = row.dataset.region;
+        const city = row.dataset.city.toLowerCase();
+        
+        const matchTab = (activeTab === 'All' || region === activeTab);
+        const matchQuery = city.includes(query);
+        
+        if (matchTab && matchQuery) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
