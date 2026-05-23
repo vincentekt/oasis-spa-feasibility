@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Dynamic URL hash propagation
-    function updateLinkHashes(lang, model) {
+    function updateLinkHashes(lang) {
         const links = document.querySelectorAll('a');
         links.forEach(link => {
             const href = link.getAttribute('href');
@@ -519,7 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const hashParts = [];
                 if (lang !== 'en') hashParts.push(lang);
-                if (model !== 'spa') hashParts.push(model);
                 
                 let anchor = '';
                 if (pageHash) {
@@ -538,7 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getActiveState() {
         let lang = 'en';
-        let model = 'spa';
         const hash = window.location.hash;
         
         if (hash) {
@@ -550,27 +548,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (parts[0] === 'vi') {
                 lang = 'vi';
             }
-            
-            if (parts.includes('salon')) {
-                model = 'salon';
-            }
         } else {
             try {
                 lang = localStorage.getItem('selectedLanguage') || 'en';
-                model = localStorage.getItem('selectedModel') || 'spa';
             } catch (e) {
                 lang = 'en';
-                model = 'spa';
             }
         }
-        return { lang, model };
+        return { lang, model: 'spa' };
     }
 
     // Save to localStorage
     const activeState = getActiveState();
     try {
         localStorage.setItem('selectedLanguage', activeState.lang);
-        localStorage.setItem('selectedModel', activeState.model);
+        localStorage.removeItem('selectedModel');
     } catch (e) {}
 
     // ==========================================
@@ -1704,72 +1696,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Immediately apply active language hash propagation on links
             const state = getActiveState();
-            updateLinkHashes(state.lang, state.model);
+            updateLinkHashes(state.lang);
         }
 
         // Render city list initial state
         renderCityList(initialRegion);
-        
-        // Dynamically inject the model selector switch below language switcher
-        const langSelector = document.querySelector('.lang-selector');
-        if (langSelector) {
-            let modelSelector = document.querySelector('.model-selector');
-            if (!modelSelector) {
-                modelSelector = document.createElement('div');
-                modelSelector.className = 'model-selector';
-                
-                const spaBtn = document.createElement('button');
-                spaBtn.className = 'model-btn';
-                spaBtn.setAttribute('data-model', 'spa');
-                spaBtn.textContent = '💆‍♀️ Hair Spa';
-                
-                const salonBtn = document.createElement('button');
-                salonBtn.className = 'model-btn';
-                salonBtn.setAttribute('data-model', 'salon');
-                salonBtn.textContent = '✂️ Pure Salon';
-                
-                modelSelector.appendChild(spaBtn);
-                modelSelector.appendChild(salonBtn);
-                
-                langSelector.parentNode.insertBefore(modelSelector, langSelector.nextSibling);
-                
-                // Bind toggle event listeners
-                const state = getActiveState();
-                const btns = [spaBtn, salonBtn];
-                
-                btns.forEach(btn => {
-                    const m = btn.getAttribute('data-model');
-                    if (m === state.model) btn.classList.add('active');
-                    
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        
-                        try {
-                            localStorage.setItem('selectedModel', m);
-                        } catch (err) {}
-                        
-                        const currentBaseUrl = window.location.href.split('#')[0];
-                        const s = getActiveState();
-                        
-                        const hashParts = [];
-                        if (s.lang !== 'en') hashParts.push(s.lang);
-                        if (m !== 'spa') hashParts.push(m);
-                        
-                        const currentHash = window.location.hash.substring(1);
-                        let anchor = '';
-                        if (currentHash) {
-                            const parts = currentHash.split('-');
-                            const stateCodes = ['ja', 'vi', 'en', 'spa', 'salon'];
-                            anchor = parts.filter(p => !stateCodes.includes(p)).join('-');
-                        }
-                        if (anchor) hashParts.push(anchor);
-                        
-                        window.location.href = `${currentBaseUrl}#${hashParts.join('-')}`;
-                        window.location.reload();
-                    });
-                });
-            }
-        }
     }
 
     // ==========================================
@@ -1785,26 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDashboard = currentPage === 'index.html' || currentPage === '';
         
         // 1. Update side bar link hashes
-        updateLinkHashes(state.lang, state.model);
-        
-        // Translate model selector buttons
-        const spaBtn = document.querySelector('.model-btn[data-model="spa"]');
-        const salonBtn = document.querySelector('.model-btn[data-model="salon"]');
-        if (spaBtn && salonBtn) {
-            const translations = state.lang === 'ja' ? jaTranslations : (state.lang === 'vi' ? viTranslations : null);
-            if (translations) {
-                spaBtn.textContent = '💆‍♀️ ' + (translations["Hair Spa"] || "Hair Spa");
-                salonBtn.textContent = '✂️ ' + (translations["Pure Salon"] || "Pure Salon");
-            } else {
-                spaBtn.textContent = '💆‍♀️ Hair Spa';
-                salonBtn.textContent = '✂️ Pure Salon';
-            }
-            // Sync active state class
-            spaBtn.classList.remove('active');
-            salonBtn.classList.remove('active');
-            if (state.model === 'spa') spaBtn.classList.add('active');
-            else salonBtn.classList.add('active');
-        }
+        updateLinkHashes(state.lang);
 
         if (isDashboard) {
             // Populate Dashboard Tables
@@ -2418,11 +2330,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {}
             
             const currentBaseUrl = window.location.href.split('#')[0];
-            const s = getActiveState();
             
             const hashParts = [];
             if (btnLang !== 'en') hashParts.push(btnLang);
-            if (s.model !== 'spa') hashParts.push(s.model);
             
             const currentHash = window.location.hash.substring(1);
             let anchor = '';
