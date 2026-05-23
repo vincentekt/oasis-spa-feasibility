@@ -2212,9 +2212,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initMobileNav() {
+        // Create mobile header bar if not exists
+        let mobileHeader = document.querySelector('.mobile-header');
+        if (!mobileHeader) {
+            mobileHeader = document.createElement('div');
+            mobileHeader.className = 'mobile-header';
+            
+            const hmbBtn = document.createElement('button');
+            hmbBtn.className = 'hamburger-btn';
+            hmbBtn.setAttribute('aria-label', 'Toggle Navigation');
+            hmbBtn.innerHTML = `
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            `;
+            
+            const logo = document.createElement('div');
+            logo.className = 'mobile-logo';
+            logo.textContent = 'Oasis Spa';
+            
+            mobileHeader.appendChild(hmbBtn);
+            mobileHeader.appendChild(logo);
+            
+            document.body.prepend(mobileHeader);
+            
+            // Toggle event
+            hmbBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+        
+        // Create overlay backdrop if not exists
+        let overlay = document.querySelector('.sidebar-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+            
+            // Close event
+            overlay.addEventListener('click', () => {
+                document.body.classList.remove('sidebar-open');
+            });
+        }
+        
+        // Auto-close sidebar on link navigation inside sidebar using event delegation
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.sidebar a');
+            if (link) {
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+        
+        // Close sidebar on window resize to desktop sizes
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    }
+
     // ==========================================
     // INITIALIZATION CODE
     // ==========================================
+    // Initialize mobile nav layout
+    initMobileNav();
+
     // Execute sidebar generation
     renderSidebar();
 
